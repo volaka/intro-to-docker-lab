@@ -19,10 +19,11 @@ In this section, we will create a private container registry to deploy our built
     --detach \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v $PWD:/root/userpath \
-    --name ibmcloud-devtools \
-    volaka/ibmcloud-devtools
-    docker exec -it ibmcloud-devtools ash
+    --name ibm-cloud-cli \
+    volaka/ibm-cloud-cli
+    docker exec -it ibm-cloud-cli bash
     cd ~/userpath
+ 
    ```
 
 2. Login to IBM Cloud with your credentials.
@@ -55,7 +56,7 @@ In this section, we will create a private container registry to deploy our built
 
      ```bash
      export ICR_URL=de.icr.io
-     export ICR_NS=volaka-akbank-tutorial
+     export ICR_NS=volaka-icr-workshop
      ```
 5. Create namespace
 
