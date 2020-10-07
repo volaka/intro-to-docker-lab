@@ -34,4 +34,55 @@ Clone the GitHub repository and follow labs 0-3 included in the tutorial: [https
 * lab1 - [Run your first container](https://github.com/volaka/intro-to-docker-lab/tree/6812e5acd913afcf01957885b524dd13ec13ff50/lab1.md)
 * lab2 - [Add value with custom images](https://github.com/volaka/intro-to-docker-lab/tree/6812e5acd913afcf01957885b524dd13ec13ff50/lab2.md)
 * lab3 - [introduction to orchestration](https://github.com/volaka/intro-to-docker-lab/tree/6812e5acd913afcf01957885b524dd13ec13ff50/lab3.md)
+=======
+# Docker
+Series of labs and instructions to introduce you to containers and Docker. Learn to run a container, inspect a container and understand the isolation of processes, create a Dockerfile, build an image from a Dockerfile and understand layers, tag and push images to a registry, scale and update containers, and more.
 
+To view the Docker workshop online, go to:
+* <https://ibm-developer.gitbook.io/docker101/>.
+
+To view the Docker workshop in Github, go to:
+* [workshop/README.md](workshop/README.md).
+
+This repository has the following structure:
+```ini
+- workshop (workshop labs)
+|_ .gitbook (images)
+|_ <language> (localization support) 
+  |_ <folder-n> (workshop labs)
+    |_README.md (steps for labs in Markdown)
+  |_ README.md (gitbook home page)
+  |_ SUMMARY.md (table of contents)
+.gitbook.yaml (GitBook read-only instructions)
+.travis.yaml (runs markdownlint by default)
+README.md (GitHub.com README)
+```
+
+## Markdown lint tool
+
+Install the [Markdown lint tool](https://github.com/markdownlint/markdownlint),
+```
+$ npm install -g markdownlint-cli
+```
+
+To use markdownlint, run the following command,
+```
+$ markdownlint workshop -c ".markdownlint.json" -o mdl-results.md
+```
+
+## Build Gitbook 
+
+Install the [gitbook-cli](https://github.com/GitbookIO/gitbook-cli),
+```
+$ npm install -g gitbook-cli
+```
+
+To build the Gitbook files into the `_book` sub-directory with the `gitbook-cli`, run the following command,
+```
+$ gitbook build ./workshop
+```
+
+Serve the Gitbook files locally with the following command,
+```
+$ gitbook serve ./workshop
+```
