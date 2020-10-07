@@ -2,14 +2,9 @@
 
 This section describes how you can create an IBM Cloud Account and how to create an external private container registry for this workshop.
 
-* <<Creating an IBM Cloud Account>>
-* <<Create An External Private Container Registry>>
-* <<Create API Key to access your private registry>>
-
 ## Creating an IBM Cloud Account
 
 If you didn't create your IBM Cloud account before the workshop, follow [IBM Cloud Registration Guide](https://app.gitbook.com/@volaka/s/ibm-cloud-registration/) to create it. Otherwise, you can skip to the next section.
-
 
 ## Create An External Private Container Registry
 
@@ -17,32 +12,35 @@ In this section, we will create a private container registry to deploy our built
 
 1. Run ibmcloud-devtools container which includes all necessary dev tools to access and manage IBM Cloud through terminal.
 
-    ```bash
+   ```bash
+    cd ~/app
     docker run \
     -t \
     --detach \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    --name ibmcloud-devtools \
-    volaka/ibmcloud-devtools
+    -v $PWD:/root/userpath \
+    --name ibm-cloud-cli \
+    volaka/ibm-cloud-cli
+    docker exec -it ibm-cloud-cli bash
+    cd ~/userpath
+ 
+   ```
 
-    docker exec -it ibmcloud-devtools ash
-    ```
+2. Login to IBM Cloud with your credentials.
 
-2. Login to IBM Cloud with your credentials. 
-
-    ```bash
+   ```bash
     ibmcloud login
-    ```
+   ```
 
 3. Login to IBM Cloud Container Registry server
 
-    ```bash
+   ```bash
     ibmcloud cr login
-    ```
+   ```
 
-    Example output:
+   Example output:
 
-    ```bash
+   ```bash
     Logging in to 'registry.eu-de.bluemix.net'...
     Logged in to 'registry.eu-de.bluemix.net'.
 
@@ -50,31 +48,30 @@ In this section, we will create a private container registry to deploy our built
     Logged in to 'de.icr.io'.
 
     OK
-    ```
-4. Create your variables for later use.
-    
-    - ICR_URL is the URL that you saw when you login to Container Registry server.
-    - ICR_NS is the namespace that we are going to create to push our images. It should be **unique** globally. 
+   ```
 
-    ```bash
-    export ICR_URL=de.icr.io
-    export ICR_NS=volaka-akbank-tutorial
-    ```
-  
+4. Create your variables for later use.
+   * ICR\_URL is the URL that you saw when you login to Container Registry server.
+   * ICR\_NS is the namespace that we are going to create to push our images. It should be **unique** globally.
+
+     ```bash
+     export ICR_URL=de.icr.io
+     export ICR_NS=volaka-icr-workshop
+     ```
 5. Create namespace
 
-    ```bash
+   ```bash
     ibmcloud cr namespace-add $ICR_NS
-    ```
+   ```
 
 6. There are two ways to create and push our image:
+   1. ```bash
+      docker build -t $ICR_URL/$ICR_NS/python-hello-world:latest . 
+      docker push $ICR_URL/$ICR_NS/python-hello-world:latest
+      ```
+   2. ```bash
+      ibmcloud cr build -t $ICR_URL/$ICR_NS/python-hello-world:latest .
+      ```
 
-    1. ```bash
-       docker build -t $ICR_URL/$ICR_NS/python-hello-world:latest . 
-       docker push $ICR_URL/$ICR_NS/python-hello-world:latest
-       ```
-    2. ```bash
-       ibmcloud cr build -t $ICR_URL/$ICR_NS/python-hello-world:latest . 
-       ```
+      > Second option builds the image locally and directly pushes it.
 
-    > Second option builds the image locally and directly pushes it.
