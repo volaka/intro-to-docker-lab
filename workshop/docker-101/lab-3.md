@@ -1,4 +1,4 @@
-# Lab 3 - Manage data in containers
+# Lab 3
 
 ## Overview
 
@@ -10,7 +10,7 @@ By default all files created inside a container are stored on a writable contain
 
 Docker provides two options to store files in the host machine: `volumes` and `bind mounts`. If you're running Docker on Linux, you can also use a `tmpfs mount`, and with Docker on Windows you can also use a `named pipe`.
 
-![Types of Mounts](../.gitbook/images/types-of-mounts.png)
+![Types of Mounts](../.gitbook/assets/types-of-mounts.png)
 
 * `Volumes` are stored in the host filesystem that is managed by Docker.
 * `Bind mounts` are stored anywhere on the host system.
@@ -18,17 +18,17 @@ Docker provides two options to store files in the host machine: `volumes` and `b
 
 Originally, the `--mount` flag was used for Docker Swarm services and the `--volume` flag was used for standalone containers. From Docker 17.06 and higher, you can also use `--mount` for standalone containers and it is in general more explicit and verbose than `--volume`.
 
-## [Optional] OverlayFS
+## \[Optional\] OverlayFS
 
 OverlayFS is a union mount filesystem implementation for Linux. To understand what a Docker volume is, it helps to first understand how layers and the filesystem work in Docker.
 
-To start a container, Docker takes the read-only image and creates a new read-write layer on top. To view the layers as one, Docker uses a Union File System or OverlayFS (Overlay File System), specifically the `overlay2` storage driver.
+To start a container, Docker takes the read-only image and creates a new read-write layer on top. To view the layers as one, Docker uses a Union File System or OverlayFS \(Overlay File System\), specifically the `overlay2` storage driver.
 
 To see Docker host managed files, you need access to the Docker process file system. Using the `--privileged` and `--pid=host` flags you can access the host's process ID namespace from inside a container like `busybox`. You can then browse to Docker's `/var/lib/docker/overlay2` directory to see the downloaded layers that are managed by Docker.
 
 To view the current list of layers in Docker,
 
-```console
+```text
 $ docker run -it --privileged --pid=host busybox nsenter -t 1 -m -u -n -i sh
 
 / # ls -l /var/lib/docker/overlay2
@@ -43,7 +43,7 @@ drwx------    2 root     root          4096 Sep 25 19:44 l
 
 Pull down the `ubuntu` image and check again,
 
-```console
+```text
 $ docker pull ubuntu
 Using default tag: latest
 latest: Pulling from library/ubuntu
@@ -81,12 +81,12 @@ The `overlay2` storage driver in essence layers different directories on the hos
 
 * base layer or lowerdir,
 * `diff` layer or upperdir,
-* overlay layer (user view), and
+* overlay layer \(user view\), and
 * `work` dir.
 
-OverlayFS refers to the lower directories as `lowerdir`, which contains the base image and the read-only (R/O) layers that are pulled down.
+OverlayFS refers to the lower directories as `lowerdir`, which contains the base image and the read-only \(R/O\) layers that are pulled down.
 
-The upper directory is called `upperdir` and is the read-write (R/W) container layer.
+The upper directory is called `upperdir` and is the read-write \(R/W\) container layer.
 
 The unified view or `overlay` layer is called `merged`.
 
@@ -94,11 +94,11 @@ Finally, a `workdir` is a required, which is an empty directory used by overlay 
 
 The `overlay2` driver supports up to 128 lower OverlayFS layers. The `l` directory contains shortened layer identifiers as symbolic links.
 
-![Overlay2 Storage Driver](../.gitbook/images/overlay2-driver.png)
+![Overlay2 Storage Driver](../.gitbook/assets/overlay2-driver.png)
 
 Cleanup,
 
-```console
+```text
 docker system prune -a
 clear
 ```
@@ -117,17 +117,17 @@ There are three types of volumes:
 
 Let's create an instance of a popular open source NoSQL database called CouchDB and use an `anonymous volume` to store the data files for the database.
 
-To run an instance of CouchDB, use the CouchDB image from Docker Hub at [https://hub.docker.com/_/couchdb](https://hub.docker.com/_/couchdb). The docs say that the default for CouchDB is to `write the database files to disk on the host system using its own internal volume management`.
+To run an instance of CouchDB, use the CouchDB image from Docker Hub at [https://hub.docker.com/\_/couchdb](https://hub.docker.com/_/couchdb). The docs say that the default for CouchDB is to `write the database files to disk on the host system using its own internal volume management`.
 
 Run the following command,
 
-```console
+```text
 docker run -d -p 5984:5984 --name my-couchdb -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=passw0rd1 couchdb:3.1
 ```
 
 CouchDB will create an anonymous volume and generated a hashed name. Check the volumes on your host system,
 
-```console
+```text
 $ docker volume ls
 DRIVER    VOLUME NAME
 local    f543c5319ebd96b7701dc1f2d915f21b095dfb35adbb8dc851630e098d526a50
@@ -135,13 +135,13 @@ local    f543c5319ebd96b7701dc1f2d915f21b095dfb35adbb8dc851630e098d526a50
 
 Set an environment variable `VOLUME` with the value of the generated name,
 
-```console
+```text
 export VOLUME=f543c5319ebd96b7701dc1f2d915f21b095dfb35adbb8dc851630e098d526a50
 ```
 
 And inspect the volume that was created, use the hash name that was generated for the volume,
 
-```console
+```text
 $ docker volume inspect $VOLUME
 [
     {
@@ -160,7 +160,7 @@ You see that Docker has created and manages a volume in the Docker host filesyst
 
 Create a new database `mydb` and insert a new document with a `hello world` message.
 
-```console
+```text
 curl -X PUT -u admin:passw0rd1 http://127.0.0.1:5984/mydb
 curl -X PUT -u admin:passw0rd1 http://127.0.0.1:5984/mydb/1 -d '{"msg": "hello world"}'
 ```
@@ -169,7 +169,7 @@ You can share an anonymous volume with another container by using the `--volumes
 
 Create a `busybox` container with an anonymous volume mounted to a directory `/data` in the container and write a message to a log file.
 
-```console
+```text
 $ docker run -it --name busybox1 -v /data busybox sh
 / # echo "hello from busybox1" > /data/hi.log
 / # ls /data
@@ -179,7 +179,7 @@ hi.log
 
 Make sure the container `busybox1` is stopped but not removed.
 
-```console
+```text
 $ docker ps -a
 CONTAINER ID    IMAGE    COMMAND    CREATED    STATUS    PORTS    NAMES
 437fb4a271c1    busybox    "sh"    18 seconds ago    Exited (0) 4 seconds ago    busybox1
@@ -187,7 +187,7 @@ CONTAINER ID    IMAGE    COMMAND    CREATED    STATUS    PORTS    NAMES
 
 Then create a second `busybox` container using the `--volumes-from` option,
 
-```console
+```text
 $ docker run --rm -it --name busybox2 --volumes-from busybox1 busybox sh
 / # ls -al /data
 / # cat /data/hi.log
@@ -197,16 +197,16 @@ hello from busybox1
 
 Docker created the anynomous volume that you were able to share using the `--volumes-from` option, and created a new anonymous volume.
 
-```console
+```text
 $ docker volume ls
 DRIVER    VOLUME NAME
-local    83a3275e889506f3e8ff12cd50f7d5b501c1ace95672334597f9a071df439493
-local               f4e6b9f9568eeb165a56b2946847035414f5f9c2cad9ff79f18e800277ae1ebd
+local    83a3275e889506f3e8ff12cd50f7d5b501c1ace95672334597f9a071df43949 <--
+local    f4e6b9f9568eeb165a56b2946847035414f5f9c2cad9ff79f18e800277ae1ebd
 ```
 
 Cleanup the existing volumes and container.
 
-```console
+```text
 docker stop my-couchdb
 docker rm my-couchdb
 docker rm busybox1
@@ -221,13 +221,13 @@ A `named volume` and `anonymous volume` are similar in that Docker manages where
 
 First, create a `named volume`,
 
-```console
+```text
 docker volume create my-couchdb-data-volume
 ```
 
 Verify the volume was created,
 
-```console
+```text
 $ docker volume ls
 DRIVER    VOLUME NAME
 local    my-couchdb-data-volume
@@ -235,7 +235,7 @@ local    my-couchdb-data-volume
 
 Now create the CouchDB container using the `named volume`,
 
-```console
+```text
 docker run -d -p 5984:5984 --name my-couchdb -v my-couchdb-data-volume:/opt/couchdb/data -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=passw0rd1 couchdb:3.1
 ```
 
@@ -243,14 +243,14 @@ Wait until the CouchDB container is running and the instance is available.
 
 Create a new database `mydb` and insert a new document with a `hello world` message.
 
-```console
+```text
 curl -X PUT -u admin:passw0rd1 http://127.0.0.1:5984/mydb
 curl -X PUT -u admin:passw0rd1 http://127.0.0.1:5984/mydb/1 -d '{"msg": "hello world"}'
 ```
 
 It now is easy to share the volume with another container. For instance, read the content of the volume using the `busybox` image, and share the `my-couchdb-data-volume` volume by mounting the volume to a directory in the `busybox` container.
 
-```console
+```text
 $ docker run --rm -it --name busybox -v my-couchdb-data-volume:/myvolume busybox sh
 / # ls -al /myvolume/
 total 40
@@ -265,7 +265,7 @@ drwxr-xr-x    4 5984    5984    4096 Sep 24 17:11 shards
 
 Cleanup,
 
-```console
+```text
 docker stop my-couchdb
 docker rm my-couchdb
 docker volume rm my-couchdb-data-volume
@@ -278,17 +278,17 @@ clear
 
 When you want to access the volume directory easily from the host machine, you can create a `host volume`.
 
-Let's use a directory in the current working directory (indicated with the command `pwd`) called `data`, or choose your own data directory on the host machine, e.g. `/home/couchdb/data`. We let docker create the `$(pwd)/data` directory if it does not exist yet. We mount the `host volume` inside the CouchDB container to the container directory `/opt/couchdb/data`, which is the default data directory for CouchDB.
+Let's use a directory in the current working directory \(indicated with the command `pwd`\) called `data`, or choose your own data directory on the host machine, e.g. `/home/couchdb/data`. We let docker create the `$(pwd)/data` directory if it does not exist yet. We mount the `host volume` inside the CouchDB container to the container directory `/opt/couchdb/data`, which is the default data directory for CouchDB.
 
 Run the following command,
 
-```console
+```text
 docker run -d -p 5984:5984 --name my-couchdb -v $(pwd)/data:/opt/couchdb/data -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=passw0rd1 couchdb:3.1
 ```
 
 Verify that a directory `data` was created,
 
-```console
+```text
 $ ls -al
 total 16
 drwxrwsrwx 3 root users 4096 Sep 24 16:27 .
@@ -298,7 +298,7 @@ drwxr-sr-x 3 5984  5984 4096 Sep 24 16:27 data
 
 and that CouchDB has created data files here,
 
-```console
+```text
 $ ls -al data
 total 32
 drwxr-sr-x 3 5984  5984 4096 Sep 24 16:27 .
@@ -310,20 +310,20 @@ drwxr-sr-x 2 5984  5984 4096 Sep 24 16:27 .delete
 
 Also check that now, no managed volume was created by docker, because we are now using a `host volume`.
 
-```console
+```text
 docker volume ls
 ```
 
 Create a new database `mydb` and insert a new document with a `hello world` message.
 
-```console
+```text
 curl -X PUT -u admin:passw0rd1 http://127.0.0.1:5984/mydb
 curl -X PUT -u admin:passw0rd1 http://127.0.0.1:5984/mydb/1 -d '{"msg": "hello world"}'
 ```
 
 Note that CouchDB created a folder `shards`,
 
-```console
+```text
 $ ls -al data
 total 40
 drwxr-sr-x 4 5984  5984 4096 Sep 24 16:49 .
@@ -336,7 +336,7 @@ drwxr-sr-x 4 5984  5984 4096 Sep 24 16:49 shards
 
 List the content of the `shards` directory,
 
-```console
+```text
 $ ls -al data/shards
 total 16
 drwxr-sr-x 4 5984 5984 4096 Sep 24 16:49 .
@@ -347,7 +347,7 @@ drwxr-sr-x 2 5984 5984 4096 Sep 24 16:49 80000000-ffffffff
 
 and the first shard,
 
-```console
+```text
 $ ls -al data/shards/00000000-7fffffff/
 total 20
 drwxr-sr-x 2 5984 5984 4096 Sep 24 16:49 .
@@ -359,7 +359,7 @@ A [shard](https://docs.couchdb.org/en/stable/cluster/sharding.html) is a horizon
 
 Cleanup,
 
-```console
+```text
 docker stop my-couchdb
 docker rm my-couchdb
 sudo rm -rf $(pwd)/data
@@ -370,7 +370,7 @@ docker system prune -a
 
 The `mount` syntax is recommended by Docker over the `volume` syntax. Bind mounts have limited functionality compared to volumes. A file or directory is referenced by its full path on the host machine when mounted into a container. Bind mounts rely on the host machine’s filesystem having a specific directory structure available and you cannot use the Docker CLI to manage bind mounts. Note that bind mounts can change the host filesystem via processes running in a container.
 
-Instead of using the `-v` syntax with three fields separated by colon separator (:), the `mount` syntax is more verbose and uses multiple `key-value` pairs:
+Instead of using the `-v` syntax with three fields separated by colon separator \(:\), the `mount` syntax is more verbose and uses multiple `key-value` pairs:
 
 * type: bind, volume or tmpfs,
 * source: path to the file or directory on host machine,
@@ -380,10 +380,11 @@ Instead of using the `-v` syntax with three fields separated by colon separator 
 * consistency: consistent, delegated, cached,
 * mount.
 
-```console
+```text
 mkdir data
 docker run -it --name busybox --mount type=bind,source="$(pwd)"/data,target=/data busybox sh
 / # echo "hello busybox" > /data/hi.txt
 / # exit
 cat data/hi.txt
 ```
+

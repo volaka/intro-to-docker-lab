@@ -1,30 +1,30 @@
-# intro-to-docker-lab
+# Introduction
 
 This is the repository of the labs for the Intro to Docker developerWorks course.
 
-- lab0 - [Install Docker](lab0.md)
-- lab1 - [Run your first container](lab1.md)
-- lab2 - [Add value with custom images](lab2.md)
-- lab3 - [introduction to orchestration](lab3.md)
-=======
-# Introduction
+* lab0 - [Install Docker](https://github.com/volaka/intro-to-docker-lab/tree/5d4da6ee4bf68b5998b7c7420992d56da7da7be5/workshop/lab0.md)
+* lab1 - [Run your first container](https://github.com/volaka/intro-to-docker-lab/tree/5d4da6ee4bf68b5998b7c7420992d56da7da7be5/workshop/lab1.md)
+* lab2 - [Add value with custom images](https://github.com/volaka/intro-to-docker-lab/tree/5d4da6ee4bf68b5998b7c7420992d56da7da7be5/workshop/lab2.md)
+* **lab3 -** [**introduction to orchestration**](https://github.com/volaka/intro-to-docker-lab/tree/5d4da6ee4bf68b5998b7c7420992d56da7da7be5/workshop/lab3.md)\*\*\*\*
+
+  **Introduction**
 
 Series of labs and instructions to introduce you to containers and Docker. Learn to run a container, inspect a container and understand the isolation of processes, create a Dockerfile, build an image from a Dockerfile and understand layers, tag and push images to a registry, scale and update containers, and more.
 
-## About this workshop
+### About this workshop
 
 This series has an additional presentation.
 
-## Agenda
+### Agenda
 
 |  |  |
 | :--- | :--- |
-| [Lab0](lab-0/README.md) | Pre-work |
-| [Lab1](lab-1/README.md) | Run your first container |
-| [Lab2](lab-2/README.md) | Add value with custom images |
-| [Lab3](lab-3/README.md) | Manage data in containers |
+| [Lab0](getting-started/lab-0.md) | Pre-work |
+| [Lab1](docker-101/lab-1.md) | Run your first container |
+| [Lab2](docker-101/lab-2.md) | Add value with custom images |
+| [Lab3](docker-101/lab-3.md) | Manage data in containers |
 
-## Pre-requirements
+### Pre-requirements
 
 For this workshop you must have:
 
@@ -32,7 +32,7 @@ For this workshop you must have:
 * Docker Engine,
 * Docker Registry account,
 
-## Compatibility
+### Compatibility
 
 This workshop has been tested on the following platforms:
 
@@ -44,14 +44,15 @@ This workshop has been tested on the following platforms:
   * **Client**: v18.09.7
   * **Docker Engine**: v19.03.5
 
-## Technology Used
+### Technology Used
 
 * [Docker CLI](https://docs.docker.com/engine/reference/commandline/cli/),
 * [Docker Hub](https://hub.docker.com/).
 
-## Credits
+### Credits
 
 * [John Zaccone](https://github.com/jzaccone)
 * [Jason Kennedy](https://github.com/jkomg)
 * [Steve Martinelli](https://github.com/stevemar)
 * [Remko de Knikker](https://github.com/remkohdev)
+
