@@ -11,6 +11,7 @@
 * [Lab 1](docker-101/lab-1.md)
 * [Lab 2](docker-101/lab-2.md)
 * [Lab 3](docker-101/lab-3.md)
+* [Lab 4](docker-101/lab-4.md)
 
 ## Resources
 

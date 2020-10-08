@@ -5,9 +5,9 @@ This is the repository of the labs for the Intro to Docker developerWorks course
 * lab0 - [Install Docker](https://github.com/volaka/intro-to-docker-lab/tree/5d4da6ee4bf68b5998b7c7420992d56da7da7be5/workshop/lab0.md)
 * lab1 - [Run your first container](https://github.com/volaka/intro-to-docker-lab/tree/5d4da6ee4bf68b5998b7c7420992d56da7da7be5/workshop/lab1.md)
 * lab2 - [Add value with custom images](https://github.com/volaka/intro-to-docker-lab/tree/5d4da6ee4bf68b5998b7c7420992d56da7da7be5/workshop/lab2.md)
-* **lab3 -** [**introduction to orchestration**](https://github.com/volaka/intro-to-docker-lab/tree/5d4da6ee4bf68b5998b7c7420992d56da7da7be5/workshop/lab3.md)\*\*\*\*
+* lab3 - [Volume details](docker-101/lab-3.md)\*\*\*\*
 
-  **Introduction**
+## **Introduction**
 
 Series of labs and instructions to introduce you to containers and Docker. Learn to run a container, inspect a container and understand the isolation of processes, create a Dockerfile, build an image from a Dockerfile and understand layers, tag and push images to a registry, scale and update containers, and more.
 
@@ -55,4 +55,8 @@ This workshop has been tested on the following platforms:
 * [Jason Kennedy](https://github.com/jkomg)
 * [Steve Martinelli](https://github.com/stevemar)
 * [Remko de Knikker](https://github.com/remkohdev)
+
+### Repo Based On
+
+[https://github.com/ibm/docker101](https://github.com/ibm/docker101)
 
