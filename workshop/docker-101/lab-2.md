@@ -72,7 +72,7 @@ Now, what if you don't have python installed locally? Don't worry! Because you d
 1. Create a `Dockerfile` but running the following command. \(copy-paste the entire code block\)
 
    ```bash
-    echo 'FROM python:3.12-alpine
+    echo 'FROM python:3.9-alpine
     RUN pip install flask
     CMD ["python","app.py"]
     COPY app.py /app.py' > Dockerfile
@@ -368,7 +368,7 @@ One of the major design properties of Docker is its use of the union file system
 Consider the Dockerfile that we created before:
 
 ```bash
-FROM python:3.12-alpine
+FROM python:3.9-alpine
 RUN pip install flask
 CMD ["python","app.py"]
 COPY app.py /app.py
@@ -383,7 +383,7 @@ Each layer of the image is `read-only`, except for the very top layer which is c
 Since image layers are `read-only`, they can be shared by images and by running containers. For instance, creating a new python app with its own Dockerfile with similar base layers, would share all the layers that it had in common with the first python app.
 
 ```bash
-FROM python:3.12-alpine
+FROM python:3.9-alpine
 RUN pip install flask
 CMD ["python","app2.py"]
 COPY app2.py /app2.py
