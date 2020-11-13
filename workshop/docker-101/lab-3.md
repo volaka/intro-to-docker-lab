@@ -18,91 +18,6 @@ Docker provides two options to store files in the host machine: `volumes` and `b
 
 Originally, the `--mount` flag was used for Docker Swarm services and the `--volume` flag was used for standalone containers. From Docker 17.06 and higher, you can also use `--mount` for standalone containers and it is in general more explicit and verbose than `--volume`.
 
-## \[Optional\] OverlayFS
-
-OverlayFS is a union mount filesystem implementation for Linux. To understand what a Docker volume is, it helps to first understand how layers and the filesystem work in Docker.
-
-To start a container, Docker takes the read-only image and creates a new read-write layer on top. To view the layers as one, Docker uses a Union File System or OverlayFS \(Overlay File System\), specifically the `overlay2` storage driver.
-
-To see Docker host managed files, you need access to the Docker process file system. Using the `--privileged` and `--pid=host` flags you can access the host's process ID namespace from inside a container like `busybox`. You can then browse to Docker's `/var/lib/docker/overlay2` directory to see the downloaded layers that are managed by Docker.
-
-To view the current list of layers in Docker,
-
-```text
-$ docker run -it --privileged --pid=host busybox nsenter -t 1 -m -u -n -i sh
-
-/ # ls -l /var/lib/docker/overlay2
-total 16
-drwx------    3 root     root          4096 Sep 25 19:44 0e55ecaa4d17c353191e68022d9a17fde64fb5e9217b07b5c56eb4c74dad5b32
-drwx------    5 root     root          4096 Sep 25 19:44 187854d05ccd18980642e820b0d2be6a127ba85d8ed96315bb5ae37eb1add36d
-drwx------    4 root     root          4096 Sep 25 19:44 187854d05ccd18980642e820b0d2be6a127ba85d8ed96315bb5ae37eb1add36d-init
-drwx------    2 root     root          4096 Sep 25 19:44 l
-
-/ # exit
-```
-
-Pull down the `ubuntu` image and check again,
-
-```text
-$ docker pull ubuntu
-Using default tag: latest
-latest: Pulling from library/ubuntu
-e6ca3592b144: Pull complete
-534a5505201d: Pull complete
-990916bd23bb: Pull complete
-Digest: sha256:cbcf86d7781dbb3a6aa2bcea25403f6b0b443e20b9959165cf52d2cc9608e4b9
-Status: Downloaded newer image for ubuntu:latest
-
-$ docker run -it --privileged --pid=host busybox nsenter -t 1 -m -u -n -i sh
-
-/ # ls -l /var/lib/docker/overlay2/
-total 36
-drwx------    3 root     root          4096 Sep 25 19:44 0e55ecaa4d17c353191e68022d9a17fde64fb5e9217b07b5c56eb4c74dad5b32
-drwx------    4 root     root          4096 Sep 25 19:45 187854d05ccd18980642e820b0d2be6a127ba85d8ed96315bb5ae37eb1add36d
-drwx------    4 root     root          4096 Sep 25 19:44 187854d05ccd18980642e820b0d2be6a127ba85d8ed96315bb5ae37eb1add36d-init
-drwx------    4 root     root          4096 Sep 25 19:46 a611792b4cac502995fa88a888261dfba0b5d852e72f9db9e075050991423779
-drwx------    3 root     root          4096 Sep 25 19:46 d181f1a41fc35a45c16e8bfcb8eee6f768f3b98f82210a43ea65f284a45fcd65
-drwx------    4 root     root          4096 Sep 25 19:46 dac2f37f6280a076836d39b87b0ae5ebf5c0d386b6d8b991b103aadbcebaa7c6
-drwx------    5 root     root          4096 Sep 25 19:47 f3e921b440c37c86d06cd9c9fb70df50edad553c36cc87f84d5eeba734aae709
-drwx------    4 root     root          4096 Sep 25 19:47 f3e921b440c37c86d06cd9c9fb70df50edad553c36cc87f84d5eeba734aae709-init
-drwx------    2 root     root          4096 Sep 25 19:47 l
-
-/ # exit
-```
-
-You see that pulling down the `ubuntu` image, implicitly pulled down 4 new layers,
-
-* a611792b4cac502995fa88a888261dfba0b5d852e72f9db9e075050991423779
-* d181f1a41fc35a45c16e8bfcb8eee6f768f3b98f82210a43ea65f284a45fcd65
-* dac2f37f6280a076836d39b87b0ae5ebf5c0d386b6d8b991b103aadbcebaa7c6
-* f3e921b440c37c86d06cd9c9fb70df50edad553c36cc87f84d5eeba734aae709
-
-The `overlay2` storage driver in essence layers different directories on the host and presents them as a single directory.
-
-* base layer or lowerdir,
-* `diff` layer or upperdir,
-* overlay layer \(user view\), and
-* `work` dir.
-
-OverlayFS refers to the lower directories as `lowerdir`, which contains the base image and the read-only \(R/O\) layers that are pulled down.
-
-The upper directory is called `upperdir` and is the read-write \(R/W\) container layer.
-
-The unified view or `overlay` layer is called `merged`.
-
-Finally, a `workdir` is a required, which is an empty directory used by overlay for internal use.
-
-The `overlay2` driver supports up to 128 lower OverlayFS layers. The `l` directory contains shortened layer identifiers as symbolic links.
-
-![Overlay2 Storage Driver](../.gitbook/assets/overlay2-driver.png)
-
-Cleanup,
-
-```text
-docker system prune -a
-clear
-```
-
 ## Volumes
 
 A `data volume` or `volume` is a directory that bypasses the `Union File System` of Docker.
@@ -165,9 +80,30 @@ curl -X PUT -u admin:passw0rd1 http://127.0.0.1:5984/mydb
 curl -X PUT -u admin:passw0rd1 http://127.0.0.1:5984/mydb/1 -d '{"msg": "hello world"}'
 ```
 
+Stop the container and start the container again,
+
+```console
+docker stop my-couchdb
+docker start my-couchdb
+```
+
+Retrieve the document in the database to test that the data was persisted,
+
+```console
+$ curl -X GET -u admin:passw0rd1 http://127.0.0.1:5984/mydb/_all_docs
+{"total_rows":1,"offset":0,"rows":[
+{"id":"1","key":"1","value":{"rev":"1-c09289617e06b96bc747fb1201fea7f1"}}
+]}
+
+$ curl -X GET -u admin:passw0rd1 http://127.0.0.1:5984/mydb/1
+{"_id":"1","_rev":"1-c09289617e06b96bc747fb1201fea7f1","msg":"hello world"}
+```
+
+#### Sharing Volumes
+
 You can share an anonymous volume with another container by using the `--volumes-from` option.
 
-Create a `busybox` container with an anonymous volume mounted to a directory `/data` in the container and write a message to a log file.
+Create a `busybox` container with an anonymous volume mounted to a directory `/data` in the container, and using shell commands, write a message to a log file.
 
 ```text
 $ docker run -it --name busybox1 -v /data busybox sh
@@ -185,7 +121,7 @@ CONTAINER ID    IMAGE    COMMAND    CREATED    STATUS    PORTS    NAMES
 437fb4a271c1    busybox    "sh"    18 seconds ago    Exited (0) 4 seconds ago    busybox1
 ```
 
-Then create a second `busybox` container using the `--volumes-from` option,
+Then create a second `busybox` container named `busybox2` using the `--volumes-from` option to share the volume created by `busybox1`,
 
 ```text
 $ docker run --rm -it --name busybox2 --volumes-from busybox1 busybox sh
@@ -200,7 +136,7 @@ Docker created the anynomous volume that you were able to share using the `--vol
 ```text
 $ docker volume ls
 DRIVER    VOLUME NAME
-local    83a3275e889506f3e8ff12cd50f7d5b501c1ace95672334597f9a071df43949 <--
+local    83a3275e889506f3e8ff12cd50f7d5b501c1ace95672334597f9a071df439493
 local    f4e6b9f9568eeb165a56b2946847035414f5f9c2cad9ff79f18e800277ae1ebd
 ```
 
@@ -263,6 +199,17 @@ drwxr-xr-x    4 5984    5984    4096 Sep 24 17:11 shards
 / # exit
 ```
 
+You can check the Docker managed filesystem for volumes by running a busybox container with privileged permission and set the process id to `host` to inspect the host system, and browse to the Docker managed directories.
+
+```console
+docker run -it --privileged --pid=host busybox nsenter -t 1 -m -u -n -i sh
+/ # ls -l /var/lib/docker/volumes
+total 28
+-rw-------    1 root     root         32768 Nov 10 15:54 metadata.db
+drwxr-xr-x    3 root     root          4096 Nov 10 15:54 my-couchdb-data-volume
+/ # exit
+```
+
 Cleanup,
 
 ```text
@@ -276,7 +223,7 @@ clear
 
 ### Host Volume
 
-When you want to access the volume directory easily from the host machine, you can create a `host volume`.
+When you want to access the volume directory easily from the host machine directly instead of using the Docker managed directories, you can create a `host volume`.
 
 Let's use a directory in the current working directory \(indicated with the command `pwd`\) called `data`, or choose your own data directory on the host machine, e.g. `/home/couchdb/data`. We let docker create the `$(pwd)/data` directory if it does not exist yet. We mount the `host volume` inside the CouchDB container to the container directory `/opt/couchdb/data`, which is the default data directory for CouchDB.
 
@@ -312,6 +259,16 @@ Also check that now, no managed volume was created by docker, because we are now
 
 ```text
 docker volume ls
+```
+
+and
+
+```console
+docker run -it --privileged --pid=host busybox nsenter -t 1 -m -u -n -i sh
+/ # ls -l /var/lib/docker/volumes
+total 24
+-rw-------    1 root     root         32768 Nov 10 16:00 metadata.db
+/ # exit
 ```
 
 Create a new database `mydb` and insert a new document with a `hello world` message.
@@ -388,3 +345,87 @@ docker run -it --name busybox --mount type=bind,source="$(pwd)"/data,target=/dat
 cat data/hi.txt
 ```
 
+## [Optional] OverlayFS
+
+OverlayFS is a `union mount filesystem` implementation for Linux. To understand what a Docker volume is, it helps to understand how layers and the filesystem work in Docker.
+
+To start a container, Docker takes the read-only image and creates a new read-write layer on top. To view the layers as one, Docker uses a Union File System or OverlayFS (Overlay File System), specifically the `overlay2` storage driver.
+
+To see Docker host managed files, you need access to the Docker process file system. Using the `--privileged` and `--pid=host` flags you can access the host's process ID namespace from inside a container like `busybox`. You can then browse to Docker's `/var/lib/docker/overlay2` directory to see the downloaded layers that are managed by Docker.
+
+To view the current list of layers in Docker,
+
+```console
+$ docker run -it --privileged --pid=host busybox nsenter -t 1 -m -u -n -i sh
+
+/ # ls -l /var/lib/docker/overlay2
+total 16
+drwx------    3 root     root          4096 Sep 25 19:44 0e55ecaa4d17c353191e68022d9a17fde64fb5e9217b07b5c56eb4c74dad5b32
+drwx------    5 root     root          4096 Sep 25 19:44 187854d05ccd18980642e820b0d2be6a127ba85d8ed96315bb5ae37eb1add36d
+drwx------    4 root     root          4096 Sep 25 19:44 187854d05ccd18980642e820b0d2be6a127ba85d8ed96315bb5ae37eb1add36d-init
+drwx------    2 root     root          4096 Sep 25 19:44 l
+
+/ # exit
+```
+
+Pull down the `ubuntu` image and check again,
+
+```console
+$ docker pull ubuntu
+Using default tag: latest
+latest: Pulling from library/ubuntu
+e6ca3592b144: Pull complete
+534a5505201d: Pull complete
+990916bd23bb: Pull complete
+Digest: sha256:cbcf86d7781dbb3a6aa2bcea25403f6b0b443e20b9959165cf52d2cc9608e4b9
+Status: Downloaded newer image for ubuntu:latest
+
+$ docker run -it --privileged --pid=host busybox nsenter -t 1 -m -u -n -i sh
+
+/ # ls -l /var/lib/docker/overlay2/
+total 36
+drwx------    3 root     root          4096 Sep 25 19:44 0e55ecaa4d17c353191e68022d9a17fde64fb5e9217b07b5c56eb4c74dad5b32
+drwx------    4 root     root          4096 Sep 25 19:45 187854d05ccd18980642e820b0d2be6a127ba85d8ed96315bb5ae37eb1add36d
+drwx------    4 root     root          4096 Sep 25 19:44 187854d05ccd18980642e820b0d2be6a127ba85d8ed96315bb5ae37eb1add36d-init
+drwx------    4 root     root          4096 Sep 25 19:46 a611792b4cac502995fa88a888261dfba0b5d852e72f9db9e075050991423779
+drwx------    3 root     root          4096 Sep 25 19:46 d181f1a41fc35a45c16e8bfcb8eee6f768f3b98f82210a43ea65f284a45fcd65
+drwx------    4 root     root          4096 Sep 25 19:46 dac2f37f6280a076836d39b87b0ae5ebf5c0d386b6d8b991b103aadbcebaa7c6
+drwx------    5 root     root          4096 Sep 25 19:47 f3e921b440c37c86d06cd9c9fb70df50edad553c36cc87f84d5eeba734aae709
+drwx------    4 root     root          4096 Sep 25 19:47 f3e921b440c37c86d06cd9c9fb70df50edad553c36cc87f84d5eeba734aae709-init
+drwx------    2 root     root          4096 Sep 25 19:47 l
+
+/ # exit
+```
+
+You see that pulling down the `ubuntu` image, implicitly pulled down 4 new layers,
+
+* a611792b4cac502995fa88a888261dfba0b5d852e72f9db9e075050991423779
+* d181f1a41fc35a45c16e8bfcb8eee6f768f3b98f82210a43ea65f284a45fcd65
+* dac2f37f6280a076836d39b87b0ae5ebf5c0d386b6d8b991b103aadbcebaa7c6
+* f3e921b440c37c86d06cd9c9fb70df50edad553c36cc87f84d5eeba734aae709
+
+The `overlay2` storage driver in essence layers different directories on the host and presents them as a single directory.
+
+* base layer or lowerdir,
+* `diff` layer or upperdir,
+* overlay layer (user view), and
+* `work` dir.
+
+OverlayFS refers to the lower directories as `lowerdir`, which contains the base image and the read-only (R/O) layers that are pulled down.
+
+The upper directory is called `upperdir` and is the read-write (R/W) container layer.
+
+The unified view or `overlay` layer is called `merged`.
+
+Finally, a `workdir` is a required, which is an empty directory used by overlay for internal use.
+
+The `overlay2` driver supports up to 128 lower OverlayFS layers. The `l` directory contains shortened layer identifiers as symbolic links.
+
+![Overlay2 Storage Driver](../.gitbook/images/overlay2-driver.png)
+
+Cleanup,
+
+```console
+docker system prune -a
+clear
+```
